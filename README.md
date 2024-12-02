@@ -1,24 +1,13 @@
-# advent_of_gleam_2024
+# Advent of Gleam 2024
 
-[![Package Version](https://img.shields.io/hexpm/v/advent_of_gleam_2024)](https://hex.pm/packages/advent_of_gleam_2024)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/advent_of_gleam_2024/)
+![](https://github.com/skovmand/advent_of_gleam_2024/workflows/test/badge.svg)
 
-```sh
-gleam add advent_of_gleam_2024@1
-```
-```gleam
-import advent_of_gleam_2024
-
-pub fn main() {
-  // TODO: An example of the project in use
-}
-```
-
-Further documentation can be found at <https://hexdocs.pm/advent_of_gleam_2024>.
-
-## Development
+My christmas adventure learning Gleam in 2024 🎄🎄🎄
 
 ```sh
-gleam run   # Run the project
-gleam test  # Run the tests
+# Run each day by running the module directly
+gleam run -m day_01_historian_hysteria
+
+# Run all tests
+gleam test
 ```
