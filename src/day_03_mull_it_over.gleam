@@ -13,6 +13,7 @@ pub fn main() {
   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/03.txt")
 
   wishbox.print_solution(part: 1, answer: part01(input))
+  wishbox.print_solution(part: 2, answer: part02(input))
 }
 
 pub fn part01(memory: String) -> Int {
@@ -20,31 +21,29 @@ pub fn part01(memory: String) -> Int {
 }
 
 pub fn part02(memory: String) -> Int {
-  calculate_mul_instructions_with_dos_and_donts(memory)
+  memory
+  |> remove_donts()
+  |> calculate_mul_instructions()
 }
 
-// --
+// -- Implementation --
 
 fn calculate_mul_instructions(memory: String) -> Int {
   let assert Ok(re) = regexp.from_string("mul\\((\\d{1,3}),(\\d{1,3})\\)")
   let matches = regexp.scan(with: re, content: memory)
 
-  list.fold(matches, 0, fn(acc, match) {
-    let assert [Some(a), Some(b)] = match.submatches
-    let assert Ok(a) = int.parse(a)
-    let assert Ok(b) = int.parse(b)
-
-    acc + a * b
-  })
+  use acc, match <- list.fold(matches, 0)
+  let assert [Some(a), Some(b)] = match.submatches
+  let assert Ok(a) = int.parse(a)
+  let assert Ok(b) = int.parse(b)
+  acc + a * b
 }
 
-fn calculate_mul_instructions_with_dos_and_donts(memory: String) -> Int {
-  let options = regexp.Options(case_insensitive: False, multi_line: True)
+fn remove_donts(memory: String) -> String {
   let assert Ok(replacer) =
-    regexp.compile("don't\\(\\).*?do\\(\\)|don't\\(\\).*$", options)
+    regexp.from_string("don't\\(\\).*?do\\(\\)|don't\\(\\).*$")
 
-  let fixed_memory = string.replace(in: memory, each: "\n", with: "")
-  let fixed_memory = regexp.replace(each: replacer, in: fixed_memory, with: "")
-
-  calculate_mul_instructions(fixed_memory)
+  // Turn the input into a single line, then remove don'ts
+  string.replace(in: memory, each: "\n", with: "")
+  |> regexp.replace(each: replacer, in: _, with: "")
 }
