@@ -33,7 +33,7 @@ pub fn part02(input: String) -> Int {
   similarity_score(list_1, list_2)
 }
 
-// --
+// -- Implementation --->
 
 fn parse(input: String) -> Result(#(List(Int), List(Int)), Nil) {
   wishbox.parse_lines(input, parse_line)

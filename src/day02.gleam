@@ -13,39 +13,42 @@ pub fn main() {
   wishbox.header("--- Day 2: Historian Hysteria ---")
   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/02.txt")
 
-  wishbox.print_solution(part: 1, answer: part01(input))
-  wishbox.print_solution(part: 2, answer: part02(input))
+  let reports = parse(input)
+  wishbox.print_solution(part: 1, answer: part01(reports))
+  wishbox.print_solution(part: 2, answer: part02(reports))
 }
 
-pub fn part01(input: String) -> Int {
-  let assert Ok(reports) = parse(input)
+pub fn parse(input: String) -> List(Report) {
+  let assert Ok(reports) = wishbox.parse_lines(input, parse_line)
+  reports
+}
+
+pub fn part01(reports) {
   count_valid_reports(reports, is_report_valid)
 }
 
-pub fn part02(input: String) -> Int {
-  let assert Ok(reports) = parse(input)
+pub fn part02(reports) {
   count_valid_reports(reports, is_report_valid_using_problem_dampener)
 }
 
-// --
+// -- Implementation --->
 
-fn parse(input: String) -> Result(List(List(Int)), Nil) {
-  wishbox.parse_lines(input, parse_line)
-}
+type Report =
+  List(Int)
 
-fn parse_line(input: String) -> Result(List(Int), Nil) {
+fn parse_line(input: String) -> Result(Report, Nil) {
   string.split(input, " ")
   |> list.try_map(int.parse)
 }
 
-fn count_valid_reports(reports: List(List(a)), validator: fn(List(a)) -> Bool) {
+fn count_valid_reports(reports: List(Report), validator: fn(Report) -> Bool) {
   reports
   |> list.filter(validator)
   |> list.length
 }
 
 // Solver for part 1
-fn is_report_valid(report: List(Int)) -> Bool {
+fn is_report_valid(report: Report) -> Bool {
   let check_fn = get_check_fn(report)
 
   report
@@ -54,7 +57,7 @@ fn is_report_valid(report: List(Int)) -> Bool {
 }
 
 // Solver for part 2
-fn is_report_valid_using_problem_dampener(report: List(Int)) -> Bool {
+fn is_report_valid_using_problem_dampener(report: Report) -> Bool {
   case is_report_valid(report) {
     True -> True
     False ->
@@ -67,7 +70,7 @@ fn is_report_valid_using_problem_dampener(report: List(Int)) -> Bool {
   }
 }
 
-fn recheck_using_problem_dampener(report: List(Int)) -> Bool {
+fn recheck_using_problem_dampener(report: Report) -> Bool {
   let check_fn = get_check_fn(report)
 
   let assert Ok(first_element) = list.first(report)

@@ -26,7 +26,7 @@ pub fn part02(memory: String) -> Int {
   |> calculate_mul_instructions()
 }
 
-// -- Implementation --
+// -- Implementation --->
 
 fn calculate_mul_instructions(memory: String) -> Int {
   let assert Ok(re) = regexp.from_string("mul\\((\\d{1,3}),(\\d{1,3})\\)")

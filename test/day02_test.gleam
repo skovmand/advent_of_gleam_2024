@@ -11,18 +11,18 @@ const example = "7 6 4 2 1
 "
 
 pub fn part01_example_test() {
-  let answer = day02.part01(example)
+  let answer = day02.parse(example) |> day02.part01()
   should.equal(answer, 2)
 }
 
 pub fn part01_test() {
   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/02.txt")
-  let answer = day02.part01(input)
+  let answer = day02.parse(input) |> day02.part01()
   should.equal(answer, 334)
 }
 
 pub fn part02_example_test() {
-  let answer = day02.part02(example)
+  let answer = day02.parse(example) |> day02.part02()
   should.equal(answer, 4)
 }
 
@@ -32,7 +32,7 @@ pub fn part02_where_first_two_decrease_test() {
   let input =
     "69 67 70 72 73 74 76
 "
-  let answer = day02.part02(input)
+  let answer = day02.parse(input) |> day02.part02()
 
   should.equal(answer, 1)
 }
@@ -42,7 +42,7 @@ pub fn part02_where_first_number_should_be_removed_test() {
   let input =
     "5 69 70 72 73 74 76
 "
-  let answer = day02.part02(input)
+  let answer = day02.parse(input) |> day02.part02()
 
   should.equal(answer, 1)
 }
@@ -52,13 +52,13 @@ pub fn part02_where_last_number_should_be_removed_test() {
   let input =
     "69 70 72 73 74 76 1
 "
-  let answer = day02.part02(input)
+  let answer = day02.parse(input) |> day02.part02()
 
   should.equal(answer, 1)
 }
 
 pub fn part02_test() {
   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/02.txt")
-  let answer = day02.part02(input)
+  let answer = day02.parse(input) |> day02.part02()
   should.equal(answer, 400)
 }
