@@ -4,7 +4,6 @@
 import gleam/int
 import gleam/list
 import gleam/order.{Eq, Gt, Lt}
-import gleam/result
 import gleam/string
 import simplifile
 import wishbox
@@ -74,24 +73,24 @@ fn recheck_using_problem_dampener(report: Report) -> Bool {
   let check_fn = get_check_fn(report)
 
   let assert Ok(first_element) = list.first(report)
-  let assert Ok(report_without_unsafe_element) =
-    report
-    |> list.window_by_2
-    |> list.map(fn(pair) {
-      let #(_, b) = pair
-      #(b, check_fn(pair))
-    })
-    // Here we know the second element in the pair and the validity
-    |> list.pop(fn(pair_with_validity) {
-      let #(_, is_valid) = pair_with_validity
-      is_valid == False
-    })
-    // Get the list without the invalid jump
-    |> result.map(fn(x) { x.1 })
-    // Map everything to the 2nd number
-    |> result.map(fn(x) { list.map(x, fn(x) { x.0 }) })
-    // Add the first element back to the front of the list
-    |> result.map(fn(x) { list.prepend(x, first_element) })
+
+  let report_without_unsafe_element = {
+    let assert Ok(#(_popped, temp_report)) =
+      report
+      |> list.window_by_2
+      |> list.map(fn(pair) {
+        let #(_, b) = pair
+        #(b, check_fn(pair))
+      })
+      // Here we know the second element in the pair and the validity
+      |> list.pop(fn(pair_with_validity) {
+        let #(_, is_valid) = pair_with_validity
+        is_valid == False
+      })
+
+    list.map(temp_report, fn(x) { x.0 })
+    |> list.prepend(first_element)
+  }
 
   is_report_valid(report_without_unsafe_element)
 }
