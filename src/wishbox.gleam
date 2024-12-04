@@ -3,8 +3,8 @@ import gleam/io
 import gleam/list
 import gleam/string
 
-pub fn header(day day: Int) {
-  string.concat(["🕯️🎄 Day ", int.to_string(day), " 🕯️🎄"])
+pub fn header(title: String) {
+  string.concat(["🕯️🎄 ", title, " 🕯️🎄"])
   |> io.println
   io.println("")
 }
