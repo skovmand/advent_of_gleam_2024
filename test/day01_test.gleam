@@ -1,4 +1,4 @@
-import day_01_historian_hysteria
+import day01
 import gleeunit/should
 import simplifile
 
@@ -11,23 +11,23 @@ const example = "3   4
 "
 
 pub fn part01_example_test() {
-  let answer = day_01_historian_hysteria.part01(example)
+  let answer = day01.part01(example)
   should.equal(answer, 11)
 }
 
 pub fn part01_test() {
   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/01.txt")
-  let answer = day_01_historian_hysteria.part01(input)
+  let answer = day01.part01(input)
   should.equal(answer, 2_375_403)
 }
 
 pub fn part02_example_test() {
-  let answer = day_01_historian_hysteria.part02(example)
+  let answer = day01.part02(example)
   should.equal(answer, 31)
 }
 
 pub fn part02_test() {
   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/01.txt")
-  let answer = day_01_historian_hysteria.part02(input)
+  let answer = day01.part02(input)
   should.equal(answer, 23_082_277)
 }

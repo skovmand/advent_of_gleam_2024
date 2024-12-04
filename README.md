@@ -6,7 +6,7 @@ My christmas adventure learning Gleam in 2024 🎄🎄🎄
 
 ```sh
 # Run each day by running the module directly
-gleam run -m day_01_historian_hysteria
+gleam run -m day01
 
 # Run all tests
 gleam test
