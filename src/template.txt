@@ -1,0 +1,34 @@
+/// HEADER HERE
+///
+import gleam/int
+import gleam/list
+import simplifile
+import wishbox
+
+pub fn main() {
+  wishbox.header("?")
+  let assert Ok(input) = simplifile.read(from: "puzzle_inputs/??.txt")
+
+  wishbox.print_solution(part: 1, answer: part01(input))
+  // wishbox.print_solution(part: 2, answer: part02(input))
+}
+
+pub fn part01(input: String) -> Int {
+  let assert Ok(parsed) = parse(input)
+  list.fold(parsed, 0, fn(a, b) { a + b })
+}
+
+// pub fn part01(input: String) -> Int {
+//   let assert Ok(parsed) = parse(input)
+//   list.fold(parsed, 0, fn(a, b) { a + b })
+// }
+
+// -- Implementation --->
+
+fn parse(input: String) -> Result(List(Int), Nil) {
+  wishbox.parse_lines(input, parse_line)
+}
+
+fn parse_line(input: String) -> Result(Int, Nil) {
+  int.parse(input)
+}
