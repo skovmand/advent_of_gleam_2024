@@ -1,4 +1,6 @@
-/// HEADER HERE
+/// --- Day 4: Ceres Search ---
+/// TIL: I spent some time learning how to use `use`
+/// TIL: Finally realised I could simplify some things with result.try instead of result.map
 ///
 import gleam/dict.{type Dict}
 import gleam/list

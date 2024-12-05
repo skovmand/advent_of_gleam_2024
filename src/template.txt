@@ -9,16 +9,16 @@ pub fn main() {
   wishbox.header("?")
   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/??.txt")
 
-  wishbox.print_solution(part: 1, answer: part01(input))
-  // wishbox.print_solution(part: 2, answer: part02(input))
+  wishbox.print_solution(part: 1, answer: part1(input))
+  // wishbox.print_solution(part: 2, answer: part2(input))
 }
 
-pub fn part01(input: String) -> Int {
+pub fn part1(input: String) -> Int {
   let assert Ok(parsed) = parse(input)
   list.fold(parsed, 0, fn(a, b) { a + b })
 }
 
-// pub fn part01(input: String) -> Int {
+// pub fn part2(input: String) -> Int {
 //   let assert Ok(parsed) = parse(input)
 //   list.fold(parsed, 0, fn(a, b) { a + b })
 // }
