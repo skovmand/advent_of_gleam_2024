@@ -36,7 +36,7 @@ pub fn part02(input: String) -> Int {
 // -- Implementation --->
 
 fn parse(input: String) -> Result(#(List(Int), List(Int)), Nil) {
-  wishbox.parse_lines(input, parse_line)
+  wishbox.try_parse_lines(input, parse_line)
   |> result.map(list.unzip)
 }
 

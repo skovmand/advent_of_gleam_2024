@@ -17,7 +17,13 @@ pub fn print_solution(part part: Int, answer answer: any) {
   io.println("")
 }
 
-pub fn parse_lines(
+pub fn parse_lines(input: String, mapper: fn(String) -> a) -> List(a) {
+  string.split(input, "\n")
+  |> list.filter(fn(line) { line != "" })
+  |> list.map(mapper)
+}
+
+pub fn try_parse_lines(
   input: String,
   mapper: fn(String) -> Result(a, Nil),
 ) -> Result(List(a), Nil) {

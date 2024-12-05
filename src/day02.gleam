@@ -18,7 +18,7 @@ pub fn main() {
 }
 
 pub fn parse(input: String) -> List(Report) {
-  let assert Ok(reports) = wishbox.parse_lines(input, parse_line)
+  let assert Ok(reports) = wishbox.try_parse_lines(input, parse_line)
   reports
 }
 
