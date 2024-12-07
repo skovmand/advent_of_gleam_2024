@@ -33,13 +33,13 @@ const example = "47|53
 "
 
 pub fn part1_example_test() {
-  let answer = day05.part1(example)
+  let answer = day05.parse(example) |> day05.part1()
   should.equal(answer, 143)
 }
 
 pub fn part1_test() {
   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/05.txt")
-  let answer = day05.part1(input)
+  let answer = day05.parse(input) |> day05.part1()
   should.equal(answer, 6051)
 }
 //
