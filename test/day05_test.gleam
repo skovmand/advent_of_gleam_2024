@@ -42,14 +42,14 @@ pub fn part1_test() {
   let answer = day05.parse(input) |> day05.part1()
   should.equal(answer, 6051)
 }
-//
-// pub fn part2_example_test() {
-//   let answer = day05.parse(example) |> day05.part2()
-//   should.equal(answer, 9)
-// }
-//
-// pub fn part2_test() {
-//   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/05.txt")
-//   let answer = day05.parse(input) |> day05.part2()
-//   should.equal(answer, 1952)
-// }
+
+pub fn part2_example_test() {
+  let answer = day05.parse(example) |> day05.part2()
+  should.equal(answer, 123)
+}
+
+pub fn part2_test() {
+  let assert Ok(input) = simplifile.read(from: "puzzle_inputs/05.txt")
+  let answer = day05.parse(input) |> day05.part2()
+  should.equal(answer, 5093)
+}
