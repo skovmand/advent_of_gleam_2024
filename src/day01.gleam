@@ -41,11 +41,13 @@ fn parse(input: String) -> Result(#(List(Int), List(Int)), Nil) {
 }
 
 fn parse_line(input: String) -> Result(#(Int, Int), Nil) {
-  let assert [a, b] = string.split(input, "   ")
-
-  case int.parse(a), int.parse(b) {
-    Ok(a), Ok(b) -> Ok(#(a, b))
-    _, _ -> Error(Nil)
+  case string.split(input, "   ") {
+    [a, b] ->
+      case int.parse(a), int.parse(b) {
+        Ok(a), Ok(b) -> Ok(#(a, b))
+        _, _ -> Error(Nil)
+      }
+    _ -> Error(Nil)
   }
 }
 
@@ -55,7 +57,7 @@ fn total_distance_between_lists(list_1: List(Int), list_2: List(Int)) -> Int {
   let zipped_list = list.zip(sorted_list_1, sorted_list_2)
 
   list.map(zipped_list, fn(a) { int.absolute_value(a.0 - a.1) })
-  |> list.fold(0, fn(acc, x) { acc + x })
+  |> int.sum()
 }
 
 fn similarity_score(list_1: List(Int), list_2: List(Int)) -> Int {
@@ -69,7 +71,7 @@ fn similarity_score(list_1: List(Int), list_2: List(Int)) -> Int {
 
     x * multiplier
   })
-  |> list.fold(0, fn(acc, x) { acc + x })
+  |> int.sum()
 }
 
 fn build_frequency_map(list: List(Int)) -> Dict(Int, Int) {
