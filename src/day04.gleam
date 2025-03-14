@@ -10,7 +10,7 @@ import simplifile
 import wishbox
 
 pub fn main() {
-  wishbox.header("--- Day 4: Ceres Search ---")
+  wishbox.header("Day 4: Ceres Search")
   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/04.txt")
 
   let parsed = parse(input)

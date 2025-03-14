@@ -9,7 +9,7 @@ import simplifile
 import wishbox
 
 pub fn main() {
-  wishbox.header("--- Day 3: Mull It Over ---")
+  wishbox.header("Day 3: Mull It Over")
   let assert Ok(input) = simplifile.read(from: "puzzle_inputs/03.txt")
 
   wishbox.print_solution(part: 1, answer: part01(input))

@@ -4,8 +4,7 @@ import gleam/list
 import gleam/string
 
 pub fn header(title: String) {
-  string.concat(["🕯️🎄 ", title, " 🕯️🎄"])
-  |> io.println
+  io.println(string.concat(["🕯️🎄 --- ", title, " --- 🕯️🎄"]))
   io.println("")
 }
 
