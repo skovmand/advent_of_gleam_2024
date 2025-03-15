@@ -1,7 +1,7 @@
 import gleam/dict.{type Dict}
 import gleam/function
 import gleam/list
-import gleam/option.{type Option, None, Some}
+import gleam/option.{None, Some}
 import gleam/set.{type Set}
 import gleam/string
 import simplifile
@@ -40,7 +40,7 @@ pub type Thing {
 
 // PARSING
 
-fn parse(input: String) -> #(Map, Guard) {
+pub fn parse(input: String) -> #(Map, Guard) {
   let assert #(map, Some(guard)) =
     input
     |> string.split("\n")
@@ -74,21 +74,11 @@ fn parse(input: String) -> #(Map, Guard) {
 // PART 1
 
 type State {
-  State(
-    map: Map,
-    guard: Guard,
-    seen_positions: Set(Point2D),
-    seen_guards: Set(Guard),
-  )
+  State(map: Map, guard: Guard, seen_positions: Set(Point2D))
 }
 
 fn build_initial_state(map: Map, guard: Guard) -> State {
-  State(
-    map,
-    guard,
-    seen_positions: set.insert(set.new(), guard.position),
-    seen_guards: set.insert(set.new(), guard),
-  )
+  State(map, guard, seen_positions: set.insert(set.new(), guard.position))
 }
 
 pub fn part_1(parsed_data: #(Map, Guard)) -> Int {
@@ -111,14 +101,7 @@ fn step_while_guard_in_map(state: State) -> State {
 }
 
 fn step(state: State) -> State {
-  let #(x, y) = state.guard.position
-
-  let next_coordinate = case state.guard.direction {
-    North -> #(x, y - 1)
-    East -> #(x + 1, y)
-    South -> #(x, y + 1)
-    West -> #(x - 1, y)
-  }
+  let next_coordinate = next_coordinate_from_direction(state.guard)
 
   case dict.get(state.map, next_coordinate) {
     Error(_) ->
@@ -127,65 +110,73 @@ fn step(state: State) -> State {
     Ok(field) -> {
       case field {
         Empty -> {
-          let next_guard = Guard(..state.guard, position: next_coordinate)
-
           State(
             ..state,
-            guard: next_guard,
+            guard: Guard(..state.guard, position: next_coordinate),
             seen_positions: set.insert(state.seen_positions, next_coordinate),
-            seen_guards: set.insert(state.seen_guards, next_guard),
           )
         }
         Obstruction -> {
-          let new_guard =
-            Guard(..state.guard, direction: turn_right(state.guard.direction))
-
-          State(
-            ..state,
-            guard: new_guard,
-            seen_guards: set.insert(state.seen_guards, new_guard),
-          )
+          State(..state, guard: turn_right(state.guard))
         }
       }
     }
   }
 }
 
-fn turn_right(direction: Direction) -> Direction {
-  case direction {
+fn next_coordinate_from_direction(guard: Guard) -> Point2D {
+  let #(x, y) = guard.position
+  case guard.direction {
+    North -> #(x, y - 1)
+    East -> #(x + 1, y)
+    South -> #(x, y + 1)
+    West -> #(x - 1, y)
+  }
+}
+
+fn turn_right(guard: Guard) -> Guard {
+  let new_direction = case guard.direction {
     North -> East
     East -> South
     South -> West
     West -> North
   }
+
+  Guard(..guard, direction: new_direction)
 }
 
 // PART 2
 
+type State2 {
+  State2(map: Map, guard: Guard, seen_guards: Set(Guard))
+}
+
+fn build_initial_state_2(map: Map, guard: Guard) {
+  State2(map: map, guard: guard, seen_guards: set.insert(set.new(), guard))
+}
+
 pub fn part_2(parsed_data: #(Map, Guard)) -> Int {
   let #(map, guard) = parsed_data
-  let initial_state = build_initial_state(map, guard)
 
   // Let the guard walk the map like in step 1, to see all the covered positions
-  let final_state = step_while_guard_in_map(initial_state)
+  let initial_state: State = build_initial_state(map, guard)
+  let seen_positions: Set(Point2D) =
+    step_while_guard_in_map(initial_state).seen_positions
 
-  final_state.seen_positions
+  seen_positions
   |> set.to_list()
   |> list.map(fn(coord) {
-    let modified_state =
-      State(
-        ..initial_state,
-        map: dict.insert(initial_state.map, coord, Obstruction),
-      )
+    let modified_map = dict.insert(map, coord, Obstruction)
+    let modified_state = build_initial_state_2(modified_map, guard)
 
-    step_and_detect_loop(modified_state)
+    is_loop(modified_state)
   })
   |> list.filter(function.identity)
   |> list.length()
 }
 
-fn step_and_detect_loop(state: State) -> Bool {
-  let new_state: State = step(state)
+fn is_loop(state: State2) -> Bool {
+  let new_state: State2 = step_2(state)
 
   case dict.get(new_state.map, new_state.guard.position) {
     // The guard went off-map. In that case there was no loop
@@ -194,11 +185,44 @@ fn step_and_detect_loop(state: State) -> Bool {
     }
     // The guard either changed direction or moved to a new position
     Ok(_) -> {
+      // Look if the previous state had already seen this Guard? (Not the new state, since that obviously has)
       case set.contains(state.seen_guards, new_state.guard) {
         // We have a loop: The old state had already visited that position with that direction
         True -> True
-        // We haven't been here before. Keep walkin'
-        False -> step_and_detect_loop(new_state)
+        False -> is_loop(new_state)
+      }
+    }
+  }
+}
+
+// Just like step 1, but keep track of guards instead of positions
+fn step_2(state: State2) -> State2 {
+  let next_coordinate = next_coordinate_from_direction(state.guard)
+
+  case dict.get(state.map, next_coordinate) {
+    Error(_) ->
+      // Guard is leaving the map
+      State2(..state, guard: Guard(..state.guard, position: next_coordinate))
+    Ok(field) -> {
+      case field {
+        Empty -> {
+          let next_guard = Guard(..state.guard, position: next_coordinate)
+
+          State2(
+            ..state,
+            guard: next_guard,
+            seen_guards: set.insert(state.seen_guards, next_guard),
+          )
+        }
+        Obstruction -> {
+          let new_guard = turn_right(state.guard)
+
+          State2(
+            ..state,
+            guard: turn_right(state.guard),
+            seen_guards: set.insert(state.seen_guards, new_guard),
+          )
+        }
       }
     }
   }
