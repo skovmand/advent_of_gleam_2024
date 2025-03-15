@@ -40,41 +40,38 @@ pub type Thing {
 
 // PARSING
 
-pub type ParsedData {
-  ParsedData(map: Map, guard: Guard)
+fn parse(input: String) -> #(Map, Guard) {
+  let assert #(map, Some(guard)) =
+    input
+    |> string.split("\n")
+    |> list.index_fold(
+      from: #(dict.new(), None),
+      with: fn(map_and_guard, line, y) {
+        line
+        |> string.split("")
+        |> list.index_fold(
+          from: map_and_guard,
+          with: fn(map_and_guard, char, x) {
+            let #(map, guard) = map_and_guard
+
+            case char {
+              "#" -> #(dict.insert(map, #(x, y), Obstruction), guard)
+              "." -> #(dict.insert(map, #(x, y), Empty), guard)
+              "^" -> #(
+                dict.insert(map, #(x, y), Empty),
+                Some(Guard(#(x, y), North)),
+              )
+              _ -> #(map, guard)
+            }
+          },
+        )
+      },
+    )
+
+  #(map, guard)
 }
 
-pub fn parse(input: String) -> ParsedData {
-  let assert #(map, Some(guard)) = map_and_guard(input)
-  ParsedData(map, guard)
-}
-
-fn map_and_guard(input: String) -> #(Map, Option(Guard)) {
-  input
-  |> string.split("\n")
-  |> list.index_fold(
-    from: #(dict.new(), None),
-    with: fn(map_and_guard, line, y) {
-      line
-      |> string.split("")
-      |> list.index_fold(from: map_and_guard, with: fn(map_and_guard, char, x) {
-        let #(map, guard) = map_and_guard
-
-        case char {
-          "#" -> #(dict.insert(map, #(x, y), Obstruction), guard)
-          "." -> #(dict.insert(map, #(x, y), Empty), guard)
-          "^" -> #(
-            dict.insert(map, #(x, y), Empty),
-            Some(Guard(#(x, y), North)),
-          )
-          _ -> #(map, guard)
-        }
-      })
-    },
-  )
-}
-
-// SOLUTION
+// PART 1
 
 type State {
   State(
@@ -85,18 +82,21 @@ type State {
   )
 }
 
-fn build_initial_state(input: ParsedData) -> State {
+fn build_initial_state(map: Map, guard: Guard) -> State {
   State(
-    input.map,
-    input.guard,
-    seen_positions: set.new() |> set.insert(input.guard.position),
-    seen_guards: set.new() |> set.insert(input.guard),
+    map,
+    guard,
+    seen_positions: set.insert(set.new(), guard.position),
+    seen_guards: set.insert(set.new(), guard),
   )
 }
 
-pub fn part_1(input: ParsedData) -> Int {
-  let initial_state = build_initial_state(input)
-  let final_state = step_while_guard_in_map(initial_state)
+pub fn part_1(parsed_data: #(Map, Guard)) -> Int {
+  let #(map, guard) = parsed_data
+
+  let final_state =
+    build_initial_state(map, guard)
+    |> step_while_guard_in_map()
 
   set.size(final_state.seen_positions)
 }
@@ -160,8 +160,11 @@ fn turn_right(direction: Direction) -> Direction {
   }
 }
 
-pub fn part_2(input: ParsedData) -> Int {
-  let initial_state = build_initial_state(input)
+// PART 2
+
+pub fn part_2(parsed_data: #(Map, Guard)) -> Int {
+  let #(map, guard) = parsed_data
+  let initial_state = build_initial_state(map, guard)
 
   // Let the guard walk the map like in step 1, to see all the covered positions
   let final_state = step_while_guard_in_map(initial_state)
