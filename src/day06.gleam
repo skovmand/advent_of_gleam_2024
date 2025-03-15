@@ -92,33 +92,30 @@ pub fn part_1(parsed_data: #(Map, Guard)) -> Int {
 }
 
 fn step_while_guard_in_map(state: State) -> State {
-  let new_state: State = step(state)
+  let next_guard: Guard = step(state.map, state.guard)
 
-  case dict.get(state.map, new_state.guard.position) {
-    Error(_) -> new_state
-    Ok(_) -> step_while_guard_in_map(new_state)
+  let next_state =
+    State(
+      ..state,
+      guard: next_guard,
+      seen_positions: set.insert(state.seen_positions, next_guard.position),
+    )
+
+  case dict.get(state.map, next_state.guard.position) {
+    Error(_) -> next_state
+    Ok(_) -> step_while_guard_in_map(next_state)
   }
 }
 
-fn step(state: State) -> State {
-  let next_coordinate = next_coordinate_from_direction(state.guard)
+fn step(map: Map, guard: Guard) -> Guard {
+  let next_coordinate = next_coordinate_from_direction(guard)
 
-  case dict.get(state.map, next_coordinate) {
-    Error(_) ->
-      // Guard is leaving the map
-      State(..state, guard: Guard(..state.guard, position: next_coordinate))
+  case dict.get(map, next_coordinate) {
+    Error(_) -> Guard(..guard, position: next_coordinate)
     Ok(field) -> {
       case field {
-        Empty -> {
-          State(
-            ..state,
-            guard: Guard(..state.guard, position: next_coordinate),
-            seen_positions: set.insert(state.seen_positions, next_coordinate),
-          )
-        }
-        Obstruction -> {
-          State(..state, guard: turn_right(state.guard))
-        }
+        Empty -> Guard(..guard, position: next_coordinate)
+        Obstruction -> turn_right(guard)
       }
     }
   }
@@ -167,7 +164,7 @@ pub fn part_2(parsed_data: #(Map, Guard)) -> Int {
   |> set.to_list()
   |> list.map(fn(coord) {
     let modified_map = dict.insert(map, coord, Obstruction)
-    let modified_state = build_initial_state_2(modified_map, guard)
+    let modified_state: State2 = build_initial_state_2(modified_map, guard)
 
     is_loop(modified_state)
   })
@@ -176,9 +173,16 @@ pub fn part_2(parsed_data: #(Map, Guard)) -> Int {
 }
 
 fn is_loop(state: State2) -> Bool {
-  let new_state: State2 = step_2(state)
+  let next_guard: Guard = step(state.map, state.guard)
 
-  case dict.get(new_state.map, new_state.guard.position) {
+  let next_state =
+    State2(
+      ..state,
+      guard: next_guard,
+      seen_guards: set.insert(state.seen_guards, next_guard),
+    )
+
+  case dict.get(next_state.map, next_state.guard.position) {
     // The guard went off-map. In that case there was no loop
     Error(_) -> {
       False
@@ -186,43 +190,10 @@ fn is_loop(state: State2) -> Bool {
     // The guard either changed direction or moved to a new position
     Ok(_) -> {
       // Look if the previous state had already seen this Guard? (Not the new state, since that obviously has)
-      case set.contains(state.seen_guards, new_state.guard) {
+      case set.contains(state.seen_guards, next_state.guard) {
         // We have a loop: The old state had already visited that position with that direction
         True -> True
-        False -> is_loop(new_state)
-      }
-    }
-  }
-}
-
-// Just like step 1, but keep track of guards instead of positions
-fn step_2(state: State2) -> State2 {
-  let next_coordinate = next_coordinate_from_direction(state.guard)
-
-  case dict.get(state.map, next_coordinate) {
-    Error(_) ->
-      // Guard is leaving the map
-      State2(..state, guard: Guard(..state.guard, position: next_coordinate))
-    Ok(field) -> {
-      case field {
-        Empty -> {
-          let next_guard = Guard(..state.guard, position: next_coordinate)
-
-          State2(
-            ..state,
-            guard: next_guard,
-            seen_guards: set.insert(state.seen_guards, next_guard),
-          )
-        }
-        Obstruction -> {
-          let new_guard = turn_right(state.guard)
-
-          State2(
-            ..state,
-            guard: turn_right(state.guard),
-            seen_guards: set.insert(state.seen_guards, new_guard),
-          )
-        }
+        False -> is_loop(next_state)
       }
     }
   }
