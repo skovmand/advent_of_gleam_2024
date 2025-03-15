@@ -1,6 +1,7 @@
 import gleam/dict.{type Dict}
 import gleam/function
 import gleam/list
+import gleam/option.{type Option, None, Some}
 import gleam/set.{type Set}
 import gleam/string
 import simplifile
@@ -22,16 +23,18 @@ pub type Direction {
   West
 }
 
+pub type Point2D =
+  #(Int, Int)
+
 pub type ThingInField {
   Empty
-  Guard(Direction)
   Obstruction
 }
 
 pub type ParsedData {
   ParsedData(
-    map: Dict(#(Int, Int), ThingInField),
-    guard_position: #(Int, Int),
+    map: Dict(Point2D, ThingInField),
+    guard_position: Point2D,
     guard_direction: Direction,
   )
 }
@@ -39,56 +42,44 @@ pub type ParsedData {
 // PARSING
 
 pub fn parse(input: String) -> ParsedData {
-  let coord_list = coordinates_with_things(input)
-  let #(guard_position, guard_direction) = find_guard(coord_list)
-  let map = dict.from_list(coord_list)
+  let #(map, guard) = map_and_guard(input)
 
+  let assert Some(#(guard_position, guard_direction)) = guard
   ParsedData(map, guard_position, guard_direction)
 }
 
-fn coordinates_with_things(input: String) -> List(#(#(Int, Int), ThingInField)) {
+fn map_and_guard(
+  input: String,
+) -> #(Dict(Point2D, ThingInField), Option(#(Point2D, Direction))) {
   input
   |> string.split("\n")
-  |> list.index_map(fn(line, line_number) {
-    string.split(line, "")
-    |> list.index_map(fn(char, col_number) {
-      let thing: ThingInField = case char {
-        "#" -> Obstruction
-        "^" -> Guard(North)
-        ">" -> Guard(East)
-        "v" -> Guard(South)
-        "<" -> Guard(West)
-        _ -> Empty
-      }
+  |> list.index_fold(
+    from: #(dict.new(), None),
+    with: fn(map_and_guard, line, y) {
+      line
+      |> string.split("")
+      |> list.index_fold(from: map_and_guard, with: fn(map_and_guard, char, x) {
+        let #(map, guard) = map_and_guard
 
-      #(#(col_number, line_number), thing)
-    })
-  })
-  |> list.flatten()
-}
-
-fn find_guard(
-  coord_list: List(#(#(Int, Int), ThingInField)),
-) -> #(#(Int, Int), Direction) {
-  let assert Ok(coord_and_direction) =
-    list.find_map(coord_list, fn(elem) {
-      case elem {
-        #(coords, Guard(direction)) -> Ok(#(coords, direction))
-        _ -> Error(Nil)
-      }
-    })
-
-  coord_and_direction
+        case char {
+          "#" -> #(dict.insert(map, #(x, y), Obstruction), guard)
+          "." -> #(dict.insert(map, #(x, y), Empty), guard)
+          "^" -> #(dict.insert(map, #(x, y), Empty), Some(#(#(x, y), North)))
+          _ -> #(map, guard)
+        }
+      })
+    },
+  )
 }
 
 // SOLUTION
 
 type State {
   State(
-    map: Dict(#(Int, Int), ThingInField),
-    guard_position: #(Int, Int),
+    map: Dict(Point2D, ThingInField),
+    guard_position: Point2D,
     guard_direction: Direction,
-    visited: Set(#(Int, Int)),
+    visited: Set(Point2D),
     visited_with_direction: Set(#(Int, Int, Direction)),
   )
 }
@@ -137,17 +128,12 @@ fn step(state: State) -> State {
   case dict.get(state.map, next_coordinate) {
     Error(_) ->
       // Guard is leaving the map
-      State(
-        ..state,
-        map: dict.insert(state.map, state.guard_position, Empty),
-        guard_position: next_coordinate,
-      )
+      State(..state, guard_position: next_coordinate)
     Ok(field) -> {
       case field {
         Empty -> {
           State(
             ..state,
-            map: dict.insert(state.map, state.guard_position, Empty),
             guard_position: next_coordinate,
             visited: set.insert(state.visited, next_coordinate),
             visited_with_direction: set.insert(state.visited_with_direction, #(
@@ -163,11 +149,6 @@ fn step(state: State) -> State {
           State(
             ..state,
             guard_direction: new_direction,
-            map: dict.insert(
-              state.map,
-              state.guard_position,
-              Guard(new_direction),
-            ),
             visited_with_direction: set.insert(state.visited_with_direction, #(
               x,
               y,
@@ -175,8 +156,6 @@ fn step(state: State) -> State {
             )),
           )
         }
-        // TODO: Maybe don't model the guard here, this should never happen...
-        Guard(_) -> state
       }
     }
   }
